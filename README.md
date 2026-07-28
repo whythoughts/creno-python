@@ -52,7 +52,7 @@ Optional fields you don't have, for example `resource_id` or `service_type_id`, 
 
 ## License
 
-[MIT](./LICENSE). See [CHANGELOG.md](./CHANGELOG.md) for release history and the repo root's [SECURITY.md](../../SECURITY.md) to report a vulnerability.
+[MIT](./LICENSE). See [CHANGELOG.md](./CHANGELOG.md) for release history and [SECURITY.md](./SECURITY.md) to report a vulnerability.
 
 ---
 

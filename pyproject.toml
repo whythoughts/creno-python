@@ -30,7 +30,7 @@ dev = ["pytest>=8", "mypy>=1.11", "ruff>=0.6"]
 [project.urls]
 Homepage = "https://crenoapp.com"
 Documentation = "https://crenoapp.com/docs"
-Repository = "https://github.com/whythoughts/platform"
+Repository = "https://github.com/whythoughts/creno-python"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/creno"]
