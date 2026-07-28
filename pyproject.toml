@@ -1,0 +1,48 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "creno"
+version = "0.1.0"
+description = "Official Python client for Creno's scheduling and booking API (https://crenoapp.com)."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.9"
+authors = [{ name = "Solution Lancee", email = "contact@crenoapp.com" }]
+keywords = ["creno", "scheduling", "booking", "api-client"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Operating System :: OS Independent",
+  "Typing :: Typed",
+]
+dependencies = ["httpx>=0.27,<1"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "mypy>=1.11", "ruff>=0.6"]
+
+[project.urls]
+Homepage = "https://crenoapp.com"
+Documentation = "https://crenoapp.com/docs"
+Repository = "https://github.com/whythoughts/platform"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/creno"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py39"
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+
+[tool.pytest.ini_options]
+markers = ["integration: real HTTP tests against a running Creno API instance"]
+testpaths = ["tests"]
