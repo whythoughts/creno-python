@@ -10,6 +10,7 @@ from creno import (
     CrenoNotFoundError,
     CrenoPlanLimitError,
     CrenoRateLimitError,
+    CrenoTenantSuspendedError,
     CrenoValidationError,
 )
 
@@ -237,3 +238,51 @@ def test_context_manager_closes_client(client_with):
     with client:
         client.list_service_types()
     assert client._client.is_closed
+
+
+# A suspended tenant and a disallowed origin both answer 403, and a
+# server-to-server caller has to be able to tell them apart: one is a
+# configuration mistake, the other is the business being switched off, which no
+# amount of retrying fixes.
+def _forbidden_with(body):
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(403, json=body)
+
+    return handler
+
+
+def test_suspended_tenant_raises_its_own_exception(client_with):
+    handler = _forbidden_with({"error": "nope", "code": "tenant_suspended"})
+    with pytest.raises(CrenoTenantSuspendedError):
+        client_with(handler).list_service_types()
+
+
+def test_suspended_tenant_is_still_a_forbidden_error(client_with):
+    # Subclass on purpose, so existing `except CrenoForbiddenError` keeps working.
+    handler = _forbidden_with({"error": "nope", "code": "tenant_suspended"})
+    with pytest.raises(CrenoForbiddenError):
+        client_with(handler).list_service_types()
+
+
+def test_origin_forbidden_is_not_reported_as_suspended(client_with):
+    handler = _forbidden_with({"error": "Origin not allowed", "code": "origin_not_allowed"})
+    with pytest.raises(CrenoForbiddenError) as exc_info:
+        client_with(handler).list_service_types()
+    assert not isinstance(exc_info.value, CrenoTenantSuspendedError)
+
+
+def test_message_is_not_sniffed_when_the_code_is_absent(client_with):
+    # An older API, or a proxy that ate the body. Falling back to the broader
+    # class is right; reading the prose for the word "suspended" is not.
+    handler = _forbidden_with({"error": "This business is suspended."})
+    with pytest.raises(CrenoForbiddenError) as exc_info:
+        client_with(handler).list_service_types()
+    assert not isinstance(exc_info.value, CrenoTenantSuspendedError)
+
+
+def test_suspension_keeps_the_status_code_and_body(client_with):
+    body = {"error": "This business is not currently accepting bookings.", "code": "tenant_suspended"}
+    with pytest.raises(CrenoTenantSuspendedError) as exc_info:
+        client_with(_forbidden_with(body)).list_service_types()
+    assert exc_info.value.status_code == 403
+    assert exc_info.value.response_body == body

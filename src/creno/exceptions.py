@@ -32,6 +32,20 @@ class CrenoForbiddenError(CrenoError):
 
     This client never sends an Origin header, so this shouldn't occur during
     normal server-to-server use of this SDK.
+
+    A suspended tenant also answers 403, as the subclass below. Catching this
+    one still catches both.
+    """
+
+
+class CrenoTenantSuspendedError(CrenoForbiddenError):
+    """403 with ``code: "tenant_suspended"`` - the business is suspended.
+
+    Unlike the origin case above, this one *is* reachable from normal
+    server-to-server use, and retrying will not help: the suspension is
+    deliberate and only Creno can lift it.
+
+    A subclass, so existing ``except CrenoForbiddenError`` code is unaffected.
     """
 
 

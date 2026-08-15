@@ -12,6 +12,7 @@ from .exceptions import (
     CrenoConflictError,
     CrenoError,
     CrenoForbiddenError,
+    CrenoTenantSuspendedError,
     CrenoNotFoundError,
     CrenoPlanLimitError,
     CrenoRateLimitError,
@@ -181,6 +182,11 @@ class CrenoClient:
         if response.status_code == 401:
             raise CrenoAuthenticationError(message, status_code=401, response_body=body)
         if response.status_code == 403:
+            # Switched on the body's ``code``, not the message, which is prose
+            # and will be reworded eventually.
+            code = body.get("code") if isinstance(body, dict) else None
+            if code == "tenant_suspended":
+                raise CrenoTenantSuspendedError(message, status_code=403, response_body=body)
             raise CrenoForbiddenError(message, status_code=403, response_body=body)
         if response.status_code == 404:
             raise CrenoNotFoundError(message, status_code=404, response_body=body)
